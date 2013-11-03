@@ -1,0 +1,10 @@
+.foo {
+
+}
+
+.loading {
+	background: url('../img/loading.gif');
+	width:30px;
+	height:30px;
+	display:inline-block;
+}
