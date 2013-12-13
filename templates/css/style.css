@@ -1,5 +1,37 @@
-.foo {
+#mavensmate-panel-table td {
+	font-size: 12px;
+	padding-left: 6px;
+	padding-right: 0;
+	vertical-align: baseline;
+}
 
+#mavensmate-panel-table td {
+	font-size: 12px;
+	padding-left: 6px;
+	padding-right: 0;
+	vertical-align: baseline;
+}
+
+#mavensmate-panel-table td.fileName {
+	width:20%;
+}
+
+#mavensmate-panel-table td.operation {
+	width:15%;
+}
+
+#mavensmate-panel-table td.timestamp {
+  width:25%;
+}
+
+#mavensmate-panel-table td.progressCell {
+	width:40%;
+}
+
+a#mavensmate-toolbar-button {
+  background: url('../img/mm.svg') 0 0 no-repeat;
+  width:24px;
+  height:24px;
 }
 
 .loading {
@@ -7,4 +39,41 @@
 	width:30px;
 	height:30px;
 	display:inline-block;
+}
+
+@-webkit-keyframes m {
+  0% {background-position:20px 0} 100% {}
+}
+@-moz-keyframes m {
+  0% {background-position:20px 0} 100% {background-position:0 0}
+}
+body {
+  background:rgb(235,235,240);
+}
+progress {
+  /*position:absolute;
+  left:50%;
+  top:50%;*/
+  /*margin:-20px 0 0 -31px;*/
+  width:62px;
+  height:12px;
+  border:1px solid rgb(160,170,190);
+  border-radius:6px;
+  background:
+    -webkit-radial-gradient(rgba(140,153,172,.3), rgba(140,153,172,0)),
+    -webkit-linear-gradient(
+      #fff 15%, #e9ecf1 15%, #d2d9e1 50%, #bdc6d2 50%, #dfe7ed
+    );
+  background:
+    -moz-radial-gradient(rgba(140,153,172,.3), rgba(140,153,172,0)),
+    -moz-linear-gradient(
+      #fff 15%, #e9ecf1 15%, #d2d9e1 50%, #bdc6d2 50%, #dfe7ed
+    );
+  background-size:20px 10px;
+  box-shadow:0 1px 0 rgba(255,255,255,.9);
+  -webkit-animation:m .6s linear infinite;
+  -moz-animation:m .6s linear infinite;
+}
+::-webkit-progress-bar {
+  display:none;
 }

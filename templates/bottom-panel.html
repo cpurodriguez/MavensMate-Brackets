@@ -8,13 +8,21 @@
         <input class="filter" type="search" placeholder="{{{PANEL_FILTER}}}"> -->
     </div>
     <div class="table-container resizable-content">
-	    <table class="bottom-panel-table table table-striped table-condensed row-highlight">
-	    	<tbody>
+	    <table id="mavensmate-panel-table" class="bottom-panel-table table table-striped table-condensed row-highlight">
+	    	<thead>
 	    		<tr>
+	    			<th>File</th>
+	    			<th>Operation</th>
+	    			<th>Timestamp</th>
+	    			<th>Status</th>
+	    		</tr>
+	    	</thead>
+	    	<tbody>
+	    		<!-- <tr>
 	    			<td class="line-number">23</td>
 	    			<td>Compiling</td>
 	    			<td><div class="loading"></div></td>
-	    		</tr>
+	    		</tr> -->
 	    	</tbody>
 	    </table>
     </div>

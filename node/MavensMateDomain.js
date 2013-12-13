@@ -5,18 +5,20 @@
         childproc = null,
         startDate = null;
     
-    function runScript(command, jsonPayload, processId, options) {
-        
-        startDate = new Date();
-
-        //var jsonPayload = ' <<< \'{"project_name": "rctest1", "files": ["/Users/josephferraro/Development/st/rctest1/src/classes/AUTOTEST.cls"], "workspace": "/Users/josephferraro/Development/st"}\'';
-        var jsonPayload = " <<< '"+JSON.stringify(jsonPayload)+"'";
-        var command = command + jsonPayload;
-        
+    function runScript(command, jsonPayloadObj, processId, options) {
         console.log(command)
-        console.log(payload)
+        console.log(jsonPayloadObj)
+        console.log(processId)
         console.log(options)
 
+        startDate = new Date();
+
+        if (jsonPayloadObj !== null) {
+            var jsonPayload = " <<< '"+JSON.stringify(jsonPayloadObj)+"'";
+            command = command + jsonPayload; 
+            console.log("command after: "+command) 
+        }
+                
         try {
             childproc = process.exec(command, options,
                 function (err, stdout, stderr) {

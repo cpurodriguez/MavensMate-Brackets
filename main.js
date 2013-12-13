@@ -21,8 +21,12 @@ define(function (require, exports, module) {
         Dialogs             = brackets.getModule("widgets/Dialogs"),
         PanelManager        = brackets.getModule("view/PanelManager"),
         Strings             = require("strings"),
+        MMInterface         = require("lib/mmInterface"),
+        MMPanel             = require("lib/mmPanel"),
         NativeFileSystem    = brackets.getModule("file/NativeFileSystem").NativeFileSystem,
+        FileUtils           = brackets.getModule("file/FileUtils"),
         CodeInspection      = brackets.getModule("language/CodeInspection"),
+        PopUpManager        = brackets.getModule("widgets/PopUpManager"),
         Menus               = brackets.getModule('command/Menus');
 
     var appMenu             = Menus.getMenu(Menus.AppMenuBar.EDIT_MENU),
@@ -30,8 +34,7 @@ define(function (require, exports, module) {
         workingsetMenu      = Menus.getContextMenu(Menus.ContextMenuIds.WORKING_SET_MENU),
         nodeConnection      = null;
 
-    var panelHtml           = require("text!templates/bottom-panel.html"),
-        panel;
+    var operationHtml        = require("text!templates/operation-row.html");
 
     var Utils               = require('lib/Utils');
     
@@ -45,7 +48,8 @@ define(function (require, exports, module) {
         //preferences     = PreferencesManager.getPreferenceStorage(module, settings),
         menu            = Menus.getMenu(Menus.AppMenuBar.EDIT_MENU);
 
-    var activePanelProcess = []
+    var mmInterface;
+    //var mmPanel;
 
     var apexLanguage = LanguageManager.getLanguage("java");
     apexLanguage.addFileExtension("cls");
@@ -54,39 +58,6 @@ define(function (require, exports, module) {
     var vfLanguage = LanguageManager.getLanguage("html");
     vfLanguage.addFileExtension("page");
     vfLanguage.addFileExtension("component");
-
-    function debug(message) {
-        if (typeof message == 'string' || message instanceof String) {
-            console.log('[mavensmate] '+message);
-        } else {
-            try {
-                var s = JSON.stringify(message);
-                console.log('[mavensmate] OBJECT TO STRING '+s);
-                console.log(message) 
-            } catch(e) {
-                console.log('[mavensmate]');
-                console.log(message) 
-            }
-        }
-        
-    }
-
-    function error(message) {
-        if (typeof message == 'string' || message instanceof String) {
-            console.log('[mavensmate] ERROR '+message);
-        } else {
-            try {
-                var s = JSON.stringify(message);
-                console.log('[mavensmate] ERROR TO STRING'+s);
-                console.log(message) 
-            } catch(e) {
-                console.log('[mavensmate] ERROR');
-                console.log(message) 
-            }
-        }
-    }
-
-    debug('ok')
 
     // Function to run when the menu item is clicked
     function handleHelloWorld() {
@@ -99,68 +70,89 @@ define(function (require, exports, module) {
         return (language.getId() === "java" || language.getId() === "html");
     }
 
-    // Handles file save
-    function handleSave(event, document) {
-        debug('saving')
-        debug(document)
-        var editor = EditorManager.getCurrentFullEditor();
-        if (isMavensMatefile(editor.document)) {
-            var processId = Utils.getProcessId();
-            activePanelProcess.push(processId)
-            
-            var s = Mustache.render(panelHtml, Strings);
-            panel = PanelManager.createBottomPanel('mavens.mavensmate.panel', $(s), 100);
+    function showCommands() {
 
-            //panel.hide();
-            panel.show();
-
-            //save to server
-            var command = '/Users/josephferraro/Development/joey2/bin/python /Users/josephferraro/Development/Github/mm/mm.py -c BRACKETS -o compile';
-            nodeConnection.domains.mmexec.runScript(command, null, Utils.getProcessId() {
-                cwd: Utils.getExtensionPath()
-            });
-        }
     }
 
-    // // Handles file save
-    // function handleHinter(text, fullPath) {
-    //     //save to server
-    //     var command = '/Users/josephferraro/Development/joey2/bin/python /Users/josephferraro/Development/Github/mm/mm.py -c BRACKETS -o compile';
-    //     nodeConnection.domains.mmexec.runScript(command, null, {
-    //         cwd: Utils.getExtensionPath()
-    //     });
+    function addToolbarButton() {
+        // Insert the reload button in the toolbar to the left of the first a element (life preview button)
+        var colors              = ["#cccccc", "#e6861c"];
+        $reloadButton = $("<a id='mavensmate-toolbar-button'>")
+            .text("")
+            .attr("title", "MavensMate")
+            .addClass("")
+            .click(showCommands)
+            .insertBefore("#main-toolbar .buttons a:first");
+    }
 
-    //     var result = { errors: [] };
+    // Handles file save
+    function handleSave(event, document) {        
+        var editor = EditorManager.getCurrentFullEditor();
+        if (isMavensMatefile(editor.document)) {
+            
+            Utils.debug(ProjectManager.getProjectRoot());
+            Utils.debug(ProjectManager.getBaseUrl());
 
-    // }
+            var projectDetails = ProjectManager.getProjectRoot();
+            var projectName = projectDetails.name;
+            var projectPath = projectDetails.fullPath;
+            if (Utils.stringEndsWith(projectPath, '/')) {
+                projectPath = projectPath.substring(0, projectPath.length - 1);
+            }
+            var workspace = FileUtils.getDirectoryPath(projectPath);
+
+            Utils.debug(workspace)
+
+            //generate process id
+            var pId = Utils.getProcessId();
+            
+            //generate html row
+            var $rowHtml = Mustache.render(operationHtml, {
+                processId : pId,
+                timestamp : Utils.getTimeStamp(),
+                operation : "compile",
+                fullPath  : document.file.fullPath,
+                fileName  : document.file.name
+            });
+
+            $("#mavensmate-bottom-panel .bottom-panel-table tbody")
+                .append($rowHtml);
+
+            //panel.hide();
+            MMPanel.show();
+
+            var jsonPayload = {
+                project_name    : projectName, 
+                files           : [document.file.fullPath], 
+                workspace       : workspace
+            }
+
+            mmInterface.call({
+                operation : 'compile',
+                payload : jsonPayload,
+                pId     : pId
+            })
+        }
+    }
 
     //hook into brackets save operation
     $(DocumentManager).on("documentSaved", handleSave);
     
-    function chain() {
-        var functions = Array.prototype.slice.call(arguments, 0);
-        
-        if (functions.length > 0) {
-            var currentFunction = functions.shift(),
-                callee = currentFunction.call();
-
-            callee.done(function () {
-                chain.apply(null, functions);
-            });
-        }
-    }
+    AppInit.htmlReady(function () {
+        MMPanel.create();
+        addToolbarButton();
+    });
 
     AppInit.appReady(function () {
-        
-        // CodeInspection.register("apex", {
-        //     name: "Apex",
-        //     scanFile: handleHinter
-        // });
+
+        //var $foo = $('<div>BOOOOO</div>')
+        //PopUpManager.addPopUp($foo, function() { }, false)
 
         ExtensionUtils.loadStyleSheet(module, "templates/css/style.css");
 
-        nodeConnection = new NodeConnection();
-        
+        mmInterface = new MMInterface();
+        var nodeConnection = mmInterface.nodeConnection;
+
         // connect to Node
         function connectNode() {
             var node = nodeConnection.connect(true);
@@ -169,12 +161,12 @@ define(function (require, exports, module) {
             
             node
                 .fail(function () {
-                    //console.error(StringUtils.format(langs.DBG_CONNECTING_TO_NODE_FAIL, Commands.EXTENSION_ID));
-                    debug('fail')
+                    //console.Utils.error(StringUtils.format(langs.DBG_CONNECTING_TO_NODE_FAIL, Commands.EXTENSION_ID));
+                    Utils.debug('fail')
                 })
                 .done(function () {
                     //console.info(StringUtils.format(langs.DBG_CONNECTION_TO_NODE_SUCCESS, Commands.EXTENSION_ID));
-                    debug('done')
+                    Utils.debug('done')
                 });
             
             return node;
@@ -189,42 +181,22 @@ define(function (require, exports, module) {
             nodeDomains
                 .fail(function () {
                     //console.log(StringUtils.format(langs.DBG_TO_LOAD_NODEEXEC_DOMAIN_ERROR, Commands.EXTENSION_ID, nodeModule));
-                    error('fail')
+                    Utils.error('fail')
                 })
                 .done(function () {
                     //console.info(StringUtils.format(langs.DBG_TO_LOAD_NODEEXEC_DOMAIN_SUCCESS, Commands.EXTENSION_ID, nodeModule));
-                    debug('done')
+                    Utils.debug('done')
                 });
             
             return nodeDomains;
         }
         
-        // update status (working) function
         $(nodeConnection)
-            .on("mmexec.update", function (domain, response) {
-                debug(domain)
-                debug(response)
-                var command = JSON.parse(response); // parsing json from node js
-            
-                if (command.stderr || command.stdout) { // if compressing process fail
-                    var type = CodeInspection.Type.ERROR;
-                    //console.error(StringUtils.format(langs.DBG_GENERIC_ERROR, Commands.EXTENSION_ID, command.stderr || command.stdout));
-                    debug(command.stderr || command.stdout)
-                    var dialog = Dialogs.showModalDialog(
-                        Dialogs.DIALOG_ID_ERROR,
-                        StringUtils.format('building title', 'foo'),
-                        StringUtils.format('error title', command.stderr || command.stdout)
-                    );
-                } else {
-                    //console.info(StringUtils.format(langs.DBG_BUILD_SUCCESSFUL, Commands.EXTENSION_ID));
-                    debug('success?')
-                }
-                
-                ProjectManager.refreshFileTree(); // refresh file tree to see new file
-            });
+            .on("mmexec.update", mmInterface.handleResponse);
+        
         
         // load in chain
-        chain(connectNode, loadNodeModule);
+        Utils.chain(connectNode, loadNodeModule);
     });
     // // First, register a command - a UI-less object associating an id to a handler
     // var MY_COMMAND_ID = "helloworld.sayhello";   // package-style naming to avoid collisions
