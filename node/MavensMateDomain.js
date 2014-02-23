@@ -1,11 +1,17 @@
+/*
+    Handles all interaction with MavensMate 'mm' CLI
+*/
+
 (function () {
     "use strict";
+    
     var process = require('child_process'),
         domainManager = null,
         childproc = null,
         startDate = null;
     
     function runScript(command, jsonPayloadObj, processId, options) {
+        console.log('------> RUNNING SCRIPT!!');
         console.log(command)
         console.log(jsonPayloadObj)
         console.log(processId)
@@ -47,6 +53,7 @@
         domainManager = DomainManager;
         
         if (!domainManager.hasDomain("mmexec")) {
+            console.log('---> REGISTERING mmexec DOMAIN!!');
             domainManager.registerDomain("mmexec", { major: 0, minor: 1 });
         }
 
@@ -67,4 +74,5 @@
     }
 
     exports.init = init;
+    exports.runScript = runScript;
 }());
