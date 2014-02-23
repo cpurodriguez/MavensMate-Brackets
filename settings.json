@@ -8,14 +8,9 @@
 
 	"mm_purge_on_delete" : true,
 
-	"mm_workspace" : [
-		"/Users/josephferraro/Development/dreamforce",
-		"/Users/josephferraro/Development/st",
-		"/Users/josephferraro/Development/mercury",
-		"/Users/josephferraro/Development/st2"
-	],
+	"mm_workspace" : [],
 
-	"mm_api_version" : "28.0",
+	"mm_api_version" : "29.0",
 
 	"mm_hide_panel_on_success" : true, 
 
@@ -31,7 +26,7 @@
 
 	"mm_log_level" : "DEBUG",
 
-	"mm_log_location" : "/Users/josephferraro/Development/st",
+	"mm_log_location" : "",
 
 	"mm_soap_log" : true,
 
@@ -45,13 +40,9 @@
 
 	"mm_log_anonymous_apex" : true,
 
-	"mm_python_location" : "/Users/josephferraro/Development/joey2/bin/python",
+	"mm_python_location" : "",
 
-	"mm_debug_location" : "/Users/josephferraro/Development/Github/mm/mm.py",
-
-	"mm_test_api" : "metadata",
-
-	"mm_diff_server_conflicts": true,
+	"mm_debug_location" : "",
 
 	"mm_ignore_managed_metadata" : true
 }
