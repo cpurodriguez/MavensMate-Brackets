@@ -11,11 +11,11 @@
         startDate = null;
     
     function runScript(command, jsonPayloadObj, processId, options) {
-        console.log('------> RUNNING SCRIPT!!');
-        console.log(command)
-        console.log(jsonPayloadObj)
-        console.log(processId)
-        console.log(options)
+        // console.log('------> RUNNING SCRIPT!!');
+        // console.log(command)
+        // console.log(jsonPayloadObj)
+        // console.log(processId)
+        // console.log(options)
 
         startDate = new Date();
 
